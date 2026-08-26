@@ -2,6 +2,7 @@ import streamlit as st
 from fpdf import FPDF
 import datetime
 import os
+import json # Nueva librería para manejar la memoria de los folios
 
 st.set_page_config(page_title="Comisiones USAER 02-E", page_icon="🏫", layout="centered")
 
@@ -18,40 +19,83 @@ personal = {
     "Pamela Betancourt Piña": {"escuela": "Quintana Roo", "director": "Mtro. Jorge Adrián Cetina Cach", "prefijo": "la maestra"}
 }
 
-# Creación de plantilla PDF con Encabezado y Pie de Página automáticos
+# 1. MOTOR DE SEGURIDAD: Calendario de Juntas
+fechas_juntas = [
+    datetime.date(2026, 8, 28)
+]
+
+hoy = datetime.date.today()
+meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+junta_activa = None
+for fecha in fechas_juntas:
+    diferencia = (fecha - hoy).days
+    if 0 <= diferencia <= 2:
+        junta_activa = fecha
+        break
+
+# 2. MOTOR DE FOLIOS CORRELATIVOS
+def obtener_folio(nombre):
+    archivo_folios = "folios.json"
+    
+    # Intentar leer el historial de folios
+    if os.path.exists(archivo_folios):
+        with open(archivo_folios, "r", encoding="utf-8") as f:
+            try:
+                folios_historial = json.load(f)
+            except json.JSONDecodeError:
+                folios_historial = {}
+    else:
+        folios_historial = {}
+
+    # Si la maestra ya generó su oficio, le devolvemos el mismo folio
+    if nombre in folios_historial:
+        return folios_historial[nombre]
+    
+    # Si es nueva, calculamos el siguiente número correlativo
+    nuevo_folio = len(folios_historial) + 1
+    folios_historial[nombre] = nuevo_folio
+    
+    # Guardamos la actualización en el archivo
+    with open(archivo_folios, "w", encoding="utf-8") as f:
+        json.dump(folios_historial, f, ensure_ascii=False, indent=4)
+        
+    return nuevo_folio
+
+# 3. PLANTILLA INSTITUCIONAL PDF
 class PDFInstitucional(FPDF):
     def header(self):
         if os.path.exists("encabezado.png"):
-            # Coloca la imagen abarcando el ancho de la hoja
             self.image("encabezado.png", x=10, y=10, w=190)
-        # ESTA ES LA SOLUCIÓN: Forzar el cursor 45mm hacia abajo para librar la imagen
         self.set_y(45)
 
     def footer(self):
-        # Posición a 3.5 cm desde el final de la página
         self.set_y(-35)
         if os.path.exists("pie_pagina.png"):
             self.image("pie_pagina.png", x=10, y=self.get_y(), w=190)
 
-def generar_pdf(nombre, datos):
+def generar_pdf(nombre, datos, fecha_junta, folio_num):
     pdf = PDFInstitucional()
     pdf.add_page()
     pdf.set_margins(25, 20, 25)
 
-    # Fecha estática requerida
-    fecha_texto = "Mérida, Yucatán a 26 de Agosto de 2026"
+    # Formatear el folio a 3 dígitos (ej: 001, 002)
+    folio_str = f"{folio_num:03d}"
+    
+    # Fechas dinámicas
+    fecha_emision_texto = f"Mérida, Yucatán a {hoy.day:02d} de {meses[hoy.month - 1]} de {hoy.year}"
+    fecha_reunion_texto = f"{fecha_junta.day:02d} de {meses[fecha_junta.month - 1]} de {fecha_junta.year}"
     
     pdf.set_font("helvetica", size=11)
-    pdf.cell(0, 5, fecha_texto, align="R", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, "Número de oficio: SE/DEE- USAER No. 02-E/132/25-26", align="R", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5, fecha_emision_texto, align="R", new_x="LMARGIN", new_y="NEXT")
+    # Inserción del folio dinámico
+    pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_str}/25-26", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
-    # Asunto
     pdf.set_font("helvetica", style="B", size=11)
     pdf.cell(0, 5, "Asunto: COMISIÓN", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
-    # Destinatario con asignación dinámica de género
     cargo_directivo = "Directora" if "Mtra." in datos["director"] else "Director"
 
     pdf.set_font("helvetica", style="B", size=11)
@@ -61,20 +105,18 @@ def generar_pdf(nombre, datos):
     pdf.cell(0, 5, "PRESENTE", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
-    # Cuerpo del oficio
     pdf.set_font("helvetica", size=11)
     texto_cuerpo = (
         f"Por este medio le comunico que {datos['prefijo']} de apoyo {nombre.upper()}, "
         "asistirá a una Junta Académica convocada por la Dirección de la USAER 02-E, "
         "con clave de C.T. 31FUA0002Y, para tratar asuntos relacionados con el servicio de "
-        "apoyo que se brinda a la escuela primaria que tiene a su cargo; el día 28 de Agosto "
-        "de 2026 en su horario laboral.\n\n"
+        "apoyo que se brinda a la escuela primaria que tiene a su cargo; el día {fecha_reunion_texto} "
+        "en su horario laboral.\n\n"
         "Agradeciendo la atención a la presente, aprovecho la ocasión para enviarle un cordial saludo."
     )
     pdf.multi_cell(0, 6, texto_cuerpo, align="J")
     pdf.ln(20)
 
-    # Firma
     pdf.cell(0, 5, "ATTE.", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(15)
     pdf.cell(0, 5, "________________________________________", align="C", new_x="LMARGIN", new_y="NEXT")
@@ -84,52 +126,61 @@ def generar_pdf(nombre, datos):
     pdf.cell(0, 5, "Director de la USAER No. 02-E", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(15)
 
-    # Copia a archivo
     pdf.set_font("helvetica", size=8)
     pdf.cell(0, 5, "C.c.p. Archivo de la USAER No. 02-E", new_x="LMARGIN", new_y="NEXT")
 
     return bytes(pdf.output())
 
-# Interfaz Visual Amigable
+# 4. INTERFAZ GRÁFICA
 st.title("📄 Oficios de Comisión")
 st.markdown("### ¡Hola! 👋 Bienvenida/o al portal de la USAER 02-E.")
-st.write("Genera tu oficio de comisión en un par de clics y sin fricciones burocráticas. Solo selecciona tu nombre, verifica tus datos y descarga tu documento listo para imprimir para nuestra junta del viernes.")
 
 st.divider()
 
-docente_seleccionado = st.selectbox(
-    "🔍 Busca tu nombre en la lista:", 
-    [""] + list(personal.keys()),
-    help="Puedes escribir tu nombre o buscarlo desplegando la lista."
-)
+if junta_activa:
+    fecha_format = f"{junta_activa.day:02d} de {meses[junta_activa.month - 1]}"
+    st.info(f"🔓 **Sistema Habilitado:** Junta académica del {fecha_format}.")
+    
+    docente_seleccionado = st.selectbox(
+        "🔍 Busca tu nombre en la lista para generar tu oficio:", 
+        [""] + list(personal.keys()),
+        help="Puedes escribir tu nombre o buscarlo desplegando la lista."
+    )
 
-if docente_seleccionado:
-    datos = personal[docente_seleccionado]
-    primer_nombre = docente_seleccionado.split()[0]
-    
-    st.success(f"¡Hola, {primer_nombre}! Hemos preparado tu formato. Por favor confirma tus datos:")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.info(f"🏫 **Escuela asignada:**\n\n{datos['escuela']}")
-    with col2:
-        cargo_display = "Directora" if "Mtra." in datos["director"] else "Director"
-        st.info(f"👤 **{cargo_display}:**\n\n{datos['director']}")
+    if docente_seleccionado:
+        # Asignar u obtener el folio al momento de seleccionar el nombre
+        folio_asignado = obtener_folio(docente_seleccionado)
         
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    pdf_bytes = generar_pdf(docente_seleccionado, datos)
-    
-    st.markdown("<h4 style='text-align: center;'>Tu archivo está listo 👇</h4>", unsafe_allow_html=True)
-    
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 3, 1])
-    with col_btn2:
-        if st.download_button(
-            label="📥 Descargar Documento PDF",
-            data=pdf_bytes,
-            file_name=f"Comision_USAER_{docente_seleccionado.replace(' ', '_')}.pdf",
-            mime="application/pdf",
-            type="primary",
-            use_container_width=True
-        ):
-            st.balloons()
+        datos = personal[docente_seleccionado]
+        primer_nombre = docente_seleccionado.split()[0]
+        
+        st.success(f"¡Hola, {primer_nombre}! Hemos preparado tu formato. Por favor confirma tus datos:")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info(f"🏫 **Escuela asignada:**\n\n{datos['escuela']}")
+        with col2:
+            cargo_display = "Directora" if "Mtra." in datos["director"] else "Director"
+            st.info(f"👤 **{cargo_display}:**\n\n{datos['director']}")
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Pasar el número de folio al generador
+        pdf_bytes = generar_pdf(docente_seleccionado, datos, junta_activa, folio_asignado)
+        
+        st.markdown("<h4 style='text-align: center;'>Tu archivo está listo 👇</h4>", unsafe_allow_html=True)
+        
+        col_btn1, col_btn2, col_btn3 = st.columns([1, 3, 1])
+        with col_btn2:
+            if st.download_button(
+                label=f"📥 Descargar Oficio (Folio {folio_asignado:03d})",
+                data=pdf_bytes,
+                file_name=f"Comision_USAER_{docente_seleccionado.replace(' ', '_')}.pdf",
+                mime="application/pdf",
+                type="primary",
+                use_container_width=True
+            ):
+                st.balloons()
+else:
+    st.error("🔒 **Generador Bloqueado**")
+    st.write("El sistema de comisiones actualmente se encuentra inactivo. Los oficios únicamente pueden generarse 48 horas antes de una junta académica oficial autorizada por la Dirección.")
