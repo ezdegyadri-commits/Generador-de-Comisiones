@@ -2,7 +2,7 @@ import streamlit as st
 from fpdf import FPDF
 import datetime
 import os
-import json # Nueva librería para manejar la memoria de los folios
+import json
 
 st.set_page_config(page_title="Comisiones USAER 02-E", page_icon="🏫", layout="centered")
 
@@ -38,7 +38,6 @@ for fecha in fechas_juntas:
 def obtener_folio(nombre):
     archivo_folios = "folios.json"
     
-    # Intentar leer el historial de folios
     if os.path.exists(archivo_folios):
         with open(archivo_folios, "r", encoding="utf-8") as f:
             try:
@@ -48,15 +47,12 @@ def obtener_folio(nombre):
     else:
         folios_historial = {}
 
-    # Si la maestra ya generó su oficio, le devolvemos el mismo folio
     if nombre in folios_historial:
         return folios_historial[nombre]
     
-    # Si es nueva, calculamos el siguiente número correlativo
     nuevo_folio = len(folios_historial) + 1
     folios_historial[nombre] = nuevo_folio
     
-    # Guardamos la actualización en el archivo
     with open(archivo_folios, "w", encoding="utf-8") as f:
         json.dump(folios_historial, f, ensure_ascii=False, indent=4)
         
@@ -79,16 +75,13 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
     pdf.add_page()
     pdf.set_margins(25, 20, 25)
 
-    # Formatear el folio a 3 dígitos (ej: 001, 002)
     folio_str = f"{folio_num:03d}"
     
-    # Fechas dinámicas
     fecha_emision_texto = f"Mérida, Yucatán a {hoy.day:02d} de {meses[hoy.month - 1]} de {hoy.year}"
     fecha_reunion_texto = f"{fecha_junta.day:02d} de {meses[fecha_junta.month - 1]} de {fecha_junta.year}"
     
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, fecha_emision_texto, align="R", new_x="LMARGIN", new_y="NEXT")
-    # Inserción del folio dinámico
     pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_str}/25-26", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
@@ -115,13 +108,31 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
         "Agradeciendo la atención a la presente, aprovecho la ocasión para enviarle un cordial saludo."
     )
     pdf.multi_cell(0, 6, texto_cuerpo, align="J")
-    pdf.ln(20)
-
-    pdf.cell(0, 5, "ATTE.", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(15)
+
+    # Bloque de Firma y Sello
+    pdf.cell(0, 5, "ATTE.", align="C", new_x="LMARGIN", new_y="NEXT")
+    
+    # Guardamos la posición Y para insertar las imágenes a la misma altura
+    y_actual = pdf.get_y()
+    
+    if os.path.exists("firma.png"):
+        # Posiciona la firma al centro (x=85 deja 40mm de ancho centrado en una hoja A4 de 210mm)
+        pdf.image("firma.png", x=85, y=y_actual, w=40)
+        
+    if os.path.exists("sello.png"):
+        # Posiciona el sello a la derecha de la firma
+        pdf.image("sello.png", x=135, y=y_actual - 5, w=35)
+        
+    # Salto de línea para dejar el espacio ocupado por la firma
+    pdf.ln(25) 
+    
     pdf.cell(0, 5, "________________________________________", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", style="B", size=11)
-    pdf.cell(0, 5, "Mtro. Edgar Adrian Yam Briceño", align="C", new_x="LMARGIN", new_y="NEXT")
+    
+    # Actualización de Grado Académico
+    pdf.cell(0, 5, "Psic. Edgar Adrián Yam Briceño MD", align="C", new_x="LMARGIN", new_y="NEXT")
+    
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, "Director de la USAER No. 02-E", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(15)
@@ -148,7 +159,6 @@ if junta_activa:
     )
 
     if docente_seleccionado:
-        # Asignar u obtener el folio al momento de seleccionar el nombre
         folio_asignado = obtener_folio(docente_seleccionado)
         
         datos = personal[docente_seleccionado]
@@ -165,7 +175,6 @@ if junta_activa:
             
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Pasar el número de folio al generador
         pdf_bytes = generar_pdf(docente_seleccionado, datos, junta_activa, folio_asignado)
         
         st.markdown("<h4 style='text-align: center;'>Tu archivo está listo 👇</h4>", unsafe_allow_html=True)
