@@ -82,7 +82,8 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
     
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, fecha_emision_texto, align="R", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_str}/25-26", align="R", new_x="LMARGIN", new_y="NEXT")
+    # AQUI ESTÁ EL CAMBIO A 26-27 👇
+    pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_str}/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
     pdf.set_font("helvetica", style="B", size=11)
@@ -113,24 +114,19 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
     # Bloque de Firma y Sello
     pdf.cell(0, 5, "ATTE.", align="C", new_x="LMARGIN", new_y="NEXT")
     
-    # Guardamos la posición Y para insertar las imágenes a la misma altura
     y_actual = pdf.get_y()
     
     if os.path.exists("firma.png"):
-        # Posiciona la firma al centro (x=85 deja 40mm de ancho centrado en una hoja A4 de 210mm)
         pdf.image("firma.png", x=85, y=y_actual, w=40)
         
     if os.path.exists("sello.png"):
-        # Posiciona el sello a la derecha de la firma
         pdf.image("sello.png", x=135, y=y_actual - 5, w=35)
         
-    # Salto de línea para dejar el espacio ocupado por la firma
     pdf.ln(25) 
     
     pdf.cell(0, 5, "________________________________________", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", style="B", size=11)
     
-    # Actualización de Grado Académico
     pdf.cell(0, 5, "Psic. Edgar Adrián Yam Briceño MD", align="C", new_x="LMARGIN", new_y="NEXT")
     
     pdf.set_font("helvetica", size=11)
