@@ -82,7 +82,6 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
     
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, fecha_emision_texto, align="R", new_x="LMARGIN", new_y="NEXT")
-    # AQUI ESTÁ EL CAMBIO A 26-27 👇
     pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_str}/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
@@ -99,14 +98,15 @@ def generar_pdf(nombre, datos, fecha_junta, folio_num):
     pdf.cell(0, 5, "PRESENTE", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
+    # LA SOLUCIÓN: Agregué la "f" al inicio de todas las líneas del párrafo para que procese correctamente la fecha
     pdf.set_font("helvetica", size=11)
     texto_cuerpo = (
         f"Por este medio le comunico que {datos['prefijo']} de apoyo {nombre.upper()}, "
-        "asistirá a una Junta Académica convocada por la Dirección de la USAER 02-E, "
-        "con clave de C.T. 31FUA0002Y, para tratar asuntos relacionados con el servicio de "
-        "apoyo que se brinda a la escuela primaria que tiene a su cargo; el día {fecha_reunion_texto} "
-        "en su horario laboral.\n\n"
-        "Agradeciendo la atención a la presente, aprovecho la ocasión para enviarle un cordial saludo."
+        f"asistirá a una Junta Académica convocada por la Dirección de la USAER 02-E, "
+        f"con clave de C.T. 31FUA0002Y, para tratar asuntos relacionados con el servicio de "
+        f"apoyo que se brinda a la escuela primaria que tiene a su cargo; el día {fecha_reunion_texto} "
+        f"en su horario laboral.\n\n"
+        f"Agradeciendo la atención a la presente, aprovecho la ocasión para enviarle un cordial saludo."
     )
     pdf.multi_cell(0, 6, texto_cuerpo, align="J")
     pdf.ln(15)
