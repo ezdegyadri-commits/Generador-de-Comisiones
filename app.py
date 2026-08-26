@@ -24,8 +24,8 @@ class PDFInstitucional(FPDF):
         if os.path.exists("encabezado.png"):
             # Coloca la imagen abarcando el ancho de la hoja
             self.image("encabezado.png", x=10, y=10, w=190)
-        # Salto de línea para que el texto comience debajo del membrete
-        self.ln(25)
+        # ESTA ES LA SOLUCIÓN: Forzar el cursor 45mm hacia abajo para librar la imagen
+        self.set_y(45)
 
     def footer(self):
         # Posición a 3.5 cm desde el final de la página
@@ -34,7 +34,6 @@ class PDFInstitucional(FPDF):
             self.image("pie_pagina.png", x=10, y=self.get_y(), w=190)
 
 def generar_pdf(nombre, datos):
-    # Usar la nueva plantilla institucional
     pdf = PDFInstitucional()
     pdf.add_page()
     pdf.set_margins(25, 20, 25)
