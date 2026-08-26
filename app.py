@@ -2,10 +2,10 @@ import streamlit as st
 from fpdf import FPDF
 import datetime
 
-# Configuración de la página
-st.set_page_config(page_title="Comisiones USAER 02-E", page_icon="📄", layout="centered")
+# 1. Configuración de la página (Pestaña del navegador)
+st.set_page_config(page_title="Comisiones USAER 02-E", page_icon="🏫", layout="centered")
 
-# Base de datos unificada de escuelas, directores y prefijo de género
+# 2. Base de datos del personal
 personal = {
     "Cindy Mayanín Burgos González": {"escuela": "Damián Carmona", "director": "Mtra. Maribel Vargas Arana", "prefijo": "la maestra"},
     "Marycruz Caamal Coral": {"escuela": "Ichcaanziho", "director": "Mtra. Rennaty Maribel Puga Jimenez", "prefijo": "la maestra"},
@@ -18,20 +18,19 @@ personal = {
     "Pamela Betancourt Piña": {"escuela": "Quintana Roo", "director": "Mtro. Jorge Adrián Cetina Cach", "prefijo": "la maestra"}
 }
 
+# 3. Función generadora de PDF
 def generar_pdf(nombre, datos):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_margins(25, 25, 25)
 
-    # Fecha de emisión automática
-    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-    hoy = datetime.date.today()
-    fecha_texto = f"Mérida, Yucatán a {hoy.day:02d} de {meses[hoy.month - 1]} de {hoy.year}"
+    # Fecha estática requerida
+    fecha_texto = "Mérida, Yucatán a 26 de Agosto de 2026"
 
     # Encabezado
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, fecha_texto, align="R", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, "Número de oficio: SE/DEE- USAER No. 02-E/001/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5, "Número de oficio: SE/DEE- USAER No. 02-E/132/25-26", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
     # Asunto
@@ -60,7 +59,7 @@ def generar_pdf(nombre, datos):
     pdf.multi_cell(0, 6, texto_cuerpo, align="J")
     pdf.ln(20)
 
-    # Firma de la Dirección
+    # Firma
     pdf.cell(0, 5, "ATTE.", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(15)
     pdf.cell(0, 5, "________________________________________", align="C", new_x="LMARGIN", new_y="NEXT")
@@ -74,25 +73,55 @@ def generar_pdf(nombre, datos):
     pdf.set_font("helvetica", size=8)
     pdf.cell(0, 5, "C.c.p. Archivo de la USAER No. 02-E", new_x="LMARGIN", new_y="NEXT")
 
-    return pdf.output()
+    # LA SOLUCIÓN AL ERROR: Convertir explícitamente a bytes
+    return bytes(pdf.output())
 
-# Interfaz web
-st.title("Generador de Oficios de Comisión")
-st.subheader("USAER 02-E")
-st.write("Selecciona tu nombre de la lista para generar y descargar tu oficio de comisión en formato PDF para la junta del viernes 28 de agosto.")
+# 4. Interfaz Visual Amigable
+st.title("📄 Oficios de Comisión")
+st.markdown("### ¡Hola! 👋 Bienvenida/o al portal de la USAER 02-E.")
+st.write("Genera tu oficio de comisión en un par de clics y sin fricciones burocráticas. Solo selecciona tu nombre, verifica tus datos y descarga tu documento listo para imprimir para nuestra junta del viernes.")
 
-docente_seleccionado = st.selectbox("Nombre del personal:", [""] + list(personal.keys()))
+st.divider()
+
+# Selector amigable
+docente_seleccionado = st.selectbox(
+    "🔍 Busca tu nombre en la lista:", 
+    [""] + list(personal.keys()),
+    help="Puedes escribir tu nombre o buscarlo desplegando la lista."
+)
 
 if docente_seleccionado:
     datos = personal[docente_seleccionado]
-    st.info(f"**Escuela asignada:** {datos['escuela']}\n\n**A la atención de:** {datos['director']}")
+    primer_nombre = docente_seleccionado.split()[0]
     
+    # Mensaje cálido de éxito
+    st.success(f"¡Hola, {primer_nombre}! Hemos preparado tu formato. Por favor confirma tus datos:")
+    
+    # Diseño a dos columnas para mejor lectura en celulares
+    col1, col2 = st.columns(2)
+    with col1:
+        st.info(f"🏫 **Escuela asignada:**\n\n{datos['escuela']}")
+    with col2:
+        st.info(f"👤 **A la atención de:**\n\n{datos['director']}")
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Generar el PDF
     pdf_bytes = generar_pdf(docente_seleccionado, datos)
     
-    st.download_button(
-        label="📄 Descargar Oficio de Comisión",
-        data=pdf_bytes,
-        file_name=f"Comision_28_Ago_{docente_seleccionado.replace(' ', '_')}.pdf",
-        mime="application/pdf",
-        type="primary"
-    )
+    # Botón centrado y amplio
+    st.markdown("<h4 style='text-align: center;'>Tu archivo está listo 👇</h4>", unsafe_allow_html=True)
+    
+    # Columnas para centrar el botón
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 3, 1])
+    with col_btn2:
+        if st.download_button(
+            label="📥 Descargar Documento PDF",
+            data=pdf_bytes,
+            file_name=f"Comision_USAER_{docente_seleccionado.replace(' ', '_')}.pdf",
+            mime="application/pdf",
+            type="primary",
+            use_container_width=True
+        ):
+            # Pequeña animación cuando la descarga comienza
+            st.balloons()
