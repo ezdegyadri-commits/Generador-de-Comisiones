@@ -11,7 +11,7 @@ hoy = datetime.date.today()
 meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 fecha_actual_texto = f"Mérida, Yucatán a {hoy.day:02d} de {meses[hoy.month - 1]} de {hoy.year}"
 
-# --- 2. BASES DE DATOS ---
+# --- 2. BASES DE DATOS PULIDAS (Diseño Profesional) ---
 personal = {
     "Cindy Mayanín Burgos González": {"escuela": "Damián Carmona", "director": "Mtra. Maribel Vargas Arana", "prefijo": "la maestra"},
     "Marycruz Caamal Coral": {"escuela": "Ichcaanziho", "director": "Mtra. Rennaty Maribel Puga Jimenez", "prefijo": "la maestra"},
@@ -26,35 +26,43 @@ personal = {
 
 escuelas = {
     "DAMIÁN CARMONA": {
-        "cct": "31DPR0414P", "director": "Mtra. Maribel Vargas Arana", "direccion": "C.41 S/N X 4 Y 6 COL. MANUEL ÁVILA CAMACHO",
+        "cct": "31DPR0414P", "director": "Mtra. Maribel Vargas Arana", 
+        "direccion": "Calle 41 S/N x 4 y 6, Col. Manuel Ávila Camacho",
         "personal": [("Cindy Mayanín Burgos González", "Maestra de apoyo"), ("Psic. María José Cupul Realpozo", "Psicóloga"), ("Com. Elmy Lucelly Puerto Gone", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "ICHCAANZIHO": {
-        "cct": "31DPR0232G", "director": "Mtra. Rennaty Maribel Puga Jimenez", "direccion": "C.44 S/N X 17 Y 25 JARDINES DE MERIDA",
+        "cct": "31DPR0232G", "director": "Mtra. Rennaty Maribel Puga Jimenez", 
+        "direccion": "Calle 44 S/N x 17 y 25, Jardines de Mérida",
         "personal": [("Marycruz Caamal Coral", "Maestra de apoyo"), ("María Cecilia Solís Vázquez", "Maestra de apoyo"), ("Psic. María José Cupul Realpozo", "Psicóloga"), ("Com. Elmy Lucelly Puerto Gone", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "GREGORIO TORRES QUINTERO": {
-        "cct": "31DPR0466V", "director": "Mtro. Elmer Ariel Ontiveros Requena", "direccion": "C.35 Nº.353 X 22 COL. LÓPEZ MATEOS",
+        "cct": "31DPR0466V", "director": "Mtro. Elmer Ariel Ontiveros Requena", 
+        "direccion": "Calle 35 No. 353 x 22, Col. López Mateos",
         "personal": [("Dolores Eugenia Cortázar Navarrete", "Maestra de apoyo"), ("Psic. Abril de María Chable Ríos", "Psicóloga"), ("Com. Marilyn Pérez Lizama", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "REMIGIO AGUILAR SOSA": {
-        "cct": "31DPR0711P", "director": "Mtro. Carlos Esteban Heredia GCantón", "direccion": "C.145 S/N X 48 Y 50 SUR CINCO COLONIAS",
+        "cct": "31DPR0711P", "director": "Mtro. Carlos Esteban Heredia GCantón", 
+        "direccion": "Calle 145 S/N x 48 y 50 Sur, Cinco Colonias",
         "personal": [("Dianely de Sugeidy Caamal Tamay", "Maestra de apoyo"), ("Psic. Abril de María Chable Ríos", "Psicóloga"), ("Com. Marilyn Pérez Lizama", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "ELVIRA PARRA ÁVILA": {
-        "cct": "31EPR0039A", "director": "Mtro. Manuel Jesús Alcocer Vázquez", "direccion": "C.20 S/N X 37 Y 39 COL. EMILIANO ZAPATA OTE.",
+        "cct": "31EPR0039A", "director": "Mtro. Manuel Jesús Alcocer Vázquez", 
+        "direccion": "Calle 20 S/N x 37 y 39, Col. Emiliano Zapata Ote.",
         "personal": [("Luis Jorge García Herrera", "Maestro de apoyo"), ("Psic. María José Cupul Realpozo", "Psicóloga"), ("Com. Elmy Lucelly Puerto Gone", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "MANUEL SARRADO": {
-        "cct": "31EPR0040Q", "director": "Mtro. José Alberto Reyna Martínez", "direccion": "C.63 Nº532 X 64 Y 66 CENTRO",
+        "cct": "31EPR0040Q", "director": "Mtro. José Alberto Reyna Martínez", 
+        "direccion": "Calle 63 No. 532 x 64 y 66, Centro",
         "personal": [("María del Rosario Pérez Vitorin", "Maestra de apoyo"), ("Psic. Abril de María Chable Ríos", "Psicóloga"), ("Com. Marilyn Pérez Lizama", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "DOMINGO SOLÍS RODRÍGUEZ": {
-        "cct": "31EPR0075F", "director": "Mtra. Erika Basto Ek", "direccion": "C.52 Nº.555 X 73 Y 73 A CENTRO",
+        "cct": "31EPR0075F", "director": "Mtra. Erika Basto Ek", 
+        "direccion": "Calle 52 No. 555 x 73 y 73 A, Centro",
         "personal": [("Zuemmy del Carmen Pérez Basto", "Maestra de apoyo"), ("Psic. Abril de María Chable Ríos", "Psicóloga"), ("Com. Marilyn Pérez Lizama", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     },
     "QUINTANA ROO": {
-        "cct": "31EPR0092W", "director": "Mtro. Jorge Adrián Cetina Cach", "direccion": "C. 158 No. 683 por 123 y 125 FRACC. LOS HÉROES",
+        "cct": "31EPR0092W", "director": "Mtro. Jorge Adrián Cetina Cach", 
+        "direccion": "Calle 158 No. 683 x 123 y 125, Fracc. Los Héroes",
         "personal": [("Pedro Manuel Torres May", "Maestro de apoyo"), ("Psic. María José Cupul Realpozo", "Psicóloga"), ("Com. Elmy Lucelly Puerto Gone", "Comunicación"), ("Mtro. Diego Peralta Torres", "Trabajo Social")]
     }
 }
@@ -71,7 +79,7 @@ docentes = {
     "Pedro Manuel Torres May": {"escuela": "QUINTANA ROO", "titulo": "MAESTRO ESPECIALISTA", "rol_texto": "Maestro de Apoyo"}
 }
 
-# --- 3. MOTOR CENTRAL DE FOLIOS (CONTROL ABSOLUTO) ---
+# --- 3. MOTOR CENTRAL DE FOLIOS ---
 ARCHIVO_FOLIOS = "registro_folios_usaer.json"
 
 def obtener_folio(clave_unica, descripcion):
@@ -84,11 +92,9 @@ def obtener_folio(clave_unica, descripcion):
     else:
         folios = {}
 
-    # Si el documento ya fue generado, devuelve el mismo folio asignado originalmente
     if clave_unica in folios:
         return folios[clave_unica]["folio"]
     
-    # Si es nuevo, calcula el siguiente. Si está vacío, empieza asumiendo que el mayor fue 10.
     if folios:
         max_folio = max([f["folio"] for f in folios.values()])
     else:
@@ -107,7 +113,6 @@ def obtener_folio(clave_unica, descripcion):
         
     return nuevo_folio
 
-# Seguridad Comisiones
 fechas_juntas = [datetime.date(2026, 8, 28)]
 junta_activa = None
 for fecha in fechas_juntas:
@@ -196,11 +201,13 @@ def pdf_asignacion_docente(nombre, info_docente, info_escuela, folio_num):
     pdf.cell(0, 5, "PRESENTE", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
     pdf.set_font("helvetica", size=11)
+    
+    # Aquí eliminamos el .lower() y agregamos el .title() para la escuela
     texto = (
         f"Por medio de la presente me permito notificarle que ha sido asignada para prestar sus "
         f"servicios en el curso escolar 2026-2027 como {info_docente['rol_texto']} en la escuela primaria "
-        f'"{info_docente["escuela"]}" con CCT {info_escuela["cct"]}, que se encuentra ubicado en la '
-        f"{info_escuela['direccion'].lower()} con un horario de 7:00 a 12:00 hrs.\n\n"
+        f'"{info_docente["escuela"].title()}" con CCT {info_escuela["cct"]}, que se encuentra ubicado en la '
+        f"{info_escuela['direccion']} con un horario de 7:00 a 12:00 hrs.\n\n"
         f"Sin más por el momento y esperando tenga usted un excelente desempeño en su labor "
         f"educativa agradezco la atención a la presente no sin antes enviarle un cordial saludo."
     )
@@ -263,11 +270,10 @@ if modulo == "Asignaciones de Ciclo":
         st.info("Notificación oficial de asignación de centro de trabajo.")
         seleccion_docente = st.selectbox("🔍 Selecciona tu nombre:", [""] + list(docentes.keys()), key="sb_docentes")
         if seleccion_docente:
-            # Solicita un folio global para esta asignación
             folio_asignado = obtener_folio(f"ASIGNACION_DOC_{seleccion_docente}", f"Asignación Docente - {seleccion_docente}")
             
             info_doc, info_esc = docentes[seleccion_docente], escuelas[docentes[seleccion_docente]["escuela"]]
-            st.success(f"🏫 **Escuela:** {info_doc['escuela']} | 📍 **CCT:** {info_esc['cct']}")
+            st.success(f"🏫 **Escuela:** {info_doc['escuela'].title()} | 📍 **CCT:** {info_esc['cct']}")
             pdf_bytes = pdf_asignacion_docente(seleccion_docente, info_doc, info_esc, folio_asignado)
             st.download_button(f"📥 Descargar Oficio (Folio {folio_asignado:03d})", data=pdf_bytes, file_name=f"Asignacion_{seleccion_docente.replace(' ', '_')}.pdf", mime="application/pdf", type="primary", use_container_width=True)
 
@@ -275,7 +281,6 @@ if modulo == "Asignaciones de Ciclo":
         st.info("Plantilla de la USAER 02-E asignada para informar a Directores de Primaria.")
         seleccion_escuela = st.selectbox("🔍 Selecciona la escuela primaria:", [""] + list(escuelas.keys()), key="sb_escuelas")
         if seleccion_escuela:
-            # Solicita un folio global para este oficio
             folio_escuela = obtener_folio(f"ASIGNACION_DIR_{seleccion_escuela}", f"Oficio Director - {seleccion_escuela}")
             
             info_esc = escuelas[seleccion_escuela]
@@ -289,11 +294,10 @@ elif modulo == "Comisiones a Juntas":
         st.info(f"🔓 **Sistema Habilitado:** Junta académica del {fecha_format}.")
         docente_seleccionado = st.selectbox("🔍 Busca tu nombre:", [""] + list(personal.keys()), key="sb_comisiones")
         if docente_seleccionado:
-            # Solicita un folio global para esta comisión
             folio_asignado = obtener_folio(f"COMISION_{docente_seleccionado}", f"Comisión a Junta - {docente_seleccionado}")
             
             datos = personal[docente_seleccionado]
-            st.success(f"🏫 **Escuela:** {datos['escuela']} | 👤 **Atención a:** {datos['director']}")
+            st.success(f"🏫 **Escuela:** {datos['escuela'].title()} | 👤 **Atención a:** {datos['director']}")
             pdf_bytes = generar_pdf_comision(docente_seleccionado, datos, junta_activa, folio_asignado)
             st.download_button(f"📥 Descargar Oficio (Folio {folio_asignado:03d})", data=pdf_bytes, file_name=f"Comision_{docente_seleccionado.replace(' ', '_')}.pdf", mime="application/pdf", type="primary", use_container_width=True)
     else:
@@ -304,7 +308,6 @@ elif modulo == "🔒 Panel de Dirección":
     st.subheader("Centro de Mando - Control de Folios")
     passw = st.text_input("Ingresa la contraseña de Dirección para auditar los folios:", type="password")
     
-    # Contraseña simple para acceder al registro
     if passw == "USAER02":
         st.success("Acceso autorizado.")
         if os.path.exists(ARCHIVO_FOLIOS):
@@ -312,13 +315,11 @@ elif modulo == "🔒 Panel de Dirección":
                 datos_folios = json.load(f)
             
             if datos_folios:
-                # Convertimos el JSON en una lista ordenada para visualizarla en una tabla bonita
                 lista_folios = [{"Folio": v["folio"], "Tipo de Documento": v["descripcion"], "Generado el": v["fecha"]} for k, v in datos_folios.items()]
                 lista_folios = sorted(lista_folios, key=lambda x: x["Folio"])
                 
                 st.dataframe(lista_folios, use_container_width=True)
                 
-                # Botón de descarga manual del respaldo
                 json_string = json.dumps(datos_folios, ensure_ascii=False, indent=4)
                 st.download_button(
                     label="💾 Descargar Respaldo de Folios (JSON)",
