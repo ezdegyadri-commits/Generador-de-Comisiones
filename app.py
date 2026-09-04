@@ -12,7 +12,6 @@ meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto
 fecha_actual_texto = f"Mérida, Yucatán a {hoy.day:02d} de {meses[hoy.month - 1]} de {hoy.year}"
 
 # --- 2. BASES DE DATOS ---
-# Personal para Comisiones
 personal = {
     "Cindy Mayanín Burgos González": {"escuela": "Damián Carmona", "director": "Mtra. Maribel Vargas Arana", "prefijo": "la maestra"},
     "Marycruz Caamal Coral": {"escuela": "Ichcaanziho", "director": "Mtra. Rennaty Maribel Puga Jimenez", "prefijo": "la maestra"},
@@ -25,7 +24,6 @@ personal = {
     "Pamela Betancourt Piña": {"escuela": "Quintana Roo", "director": "Mtro. Jorge Adrián Cetina Cach", "prefijo": "la maestra"}
 }
 
-# Escuelas para Asignaciones
 escuelas = {
     "DAMIÁN CARMONA": {
         "cct": "31DPR0414P", "director": "Mtra. Maribel Vargas Arana", "direccion": "C.41 S/N X 4 Y 6 COL. MANUEL ÁVILA CAMACHO",
@@ -73,22 +71,40 @@ docentes = {
     "Pedro Manuel Torres May": {"escuela": "QUINTANA ROO", "titulo": "MAESTRO ESPECIALISTA", "rol_texto": "Maestro de Apoyo"}
 }
 
-# --- 3. MOTORES LÓGICOS ---
-def obtener_folio(entidad, archivo_folios):
-    if os.path.exists(archivo_folios):
-        with open(archivo_folios, "r", encoding="utf-8") as f:
+# --- 3. MOTOR CENTRAL DE FOLIOS (CONTROL ABSOLUTO) ---
+ARCHIVO_FOLIOS = "registro_folios_usaer.json"
+
+def obtener_folio(clave_unica, descripcion):
+    if os.path.exists(ARCHIVO_FOLIOS):
+        with open(ARCHIVO_FOLIOS, "r", encoding="utf-8") as f:
             try:
                 folios = json.load(f)
             except json.JSONDecodeError:
                 folios = {}
     else:
         folios = {}
-    if entidad in folios:
-        return folios[entidad]
-    nuevo_folio = len(folios) + 1
-    folios[entidad] = nuevo_folio
-    with open(archivo_folios, "w", encoding="utf-8") as f:
+
+    # Si el documento ya fue generado, devuelve el mismo folio asignado originalmente
+    if clave_unica in folios:
+        return folios[clave_unica]["folio"]
+    
+    # Si es nuevo, calcula el siguiente. Si está vacío, empieza asumiendo que el mayor fue 10.
+    if folios:
+        max_folio = max([f["folio"] for f in folios.values()])
+    else:
+        max_folio = 10 
+        
+    nuevo_folio = max_folio + 1
+    
+    folios[clave_unica] = {
+        "folio": nuevo_folio,
+        "descripcion": descripcion,
+        "fecha": str(hoy)
+    }
+    
+    with open(ARCHIVO_FOLIOS, "w", encoding="utf-8") as f:
         json.dump(folios, f, ensure_ascii=False, indent=4)
+        
     return nuevo_folio
 
 # Seguridad Comisiones
@@ -138,7 +154,7 @@ def generar_pdf_comision(nombre, datos, fecha_junta, folio_num):
     fecha_reunion = f"{fecha_junta.day:02d} de {meses[fecha_junta.month - 1]} de {fecha_junta.year}"
     
     pdf.cell(0, 5, fecha_emision, align="R", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, f"Número de oficio: SE/DEE- USAER No. 02-E/{folio_num:03d}/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5, f"Oficio No: SE/DEE- USAER No. 02-E/{folio_num:03d}/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
     pdf.set_font("helvetica", style="B", size=11)
     pdf.cell(0, 5, "Asunto: COMISIÓN", align="R", new_x="LMARGIN", new_y="NEXT")
@@ -163,12 +179,13 @@ def generar_pdf_comision(nombre, datos, fecha_junta, folio_num):
     pdf.insertar_firmas()
     return bytes(pdf.output())
 
-def pdf_asignacion_docente(nombre, info_docente, info_escuela):
+def pdf_asignacion_docente(nombre, info_docente, info_escuela, folio_num):
     pdf = PDFInstitucional()
     pdf.add_page()
     pdf.set_margins(25, 20, 25)
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 5, fecha_actual_texto, align="R", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5, f"Oficio No: SE/DEE- USAER No. 02-E/{folio_num:03d}/26-27", align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(5)
     pdf.set_font("helvetica", style="B", size=11)
     pdf.cell(0, 5, "Asunto: ASIGNACIÓN DE ESCUELA", align="R", new_x="LMARGIN", new_y="NEXT")
@@ -232,7 +249,7 @@ def pdf_asignacion_director(nombre_escuela, info_escuela, folio_num):
 
 # --- 6. INTERFAZ GRÁFICA Y MENÚ LATERAL ---
 st.sidebar.title("Menú USAER 02-E")
-modulo = st.sidebar.radio("Selecciona una opción:", ["Asignaciones de Ciclo", "Comisiones a Juntas"])
+modulo = st.sidebar.radio("Navegación:", ["Asignaciones de Ciclo", "Comisiones a Juntas", "🔒 Panel de Dirección"])
 st.sidebar.divider()
 st.sidebar.info("Dirección USAER 02-E\n\nCiclo Escolar 2026-2027")
 
@@ -243,19 +260,24 @@ if modulo == "Asignaciones de Ciclo":
     tab_docentes, tab_directores = st.tabs(["👩‍🏫 Asignaciones Docentes", "🏫 Oficios para Directores"])
 
     with tab_docentes:
-        st.info("Este documento es tu notificación oficial de asignación de centro de trabajo.")
+        st.info("Notificación oficial de asignación de centro de trabajo.")
         seleccion_docente = st.selectbox("🔍 Selecciona tu nombre:", [""] + list(docentes.keys()), key="sb_docentes")
         if seleccion_docente:
+            # Solicita un folio global para esta asignación
+            folio_asignado = obtener_folio(f"ASIGNACION_DOC_{seleccion_docente}", f"Asignación Docente - {seleccion_docente}")
+            
             info_doc, info_esc = docentes[seleccion_docente], escuelas[docentes[seleccion_docente]["escuela"]]
             st.success(f"🏫 **Escuela:** {info_doc['escuela']} | 📍 **CCT:** {info_esc['cct']}")
-            pdf_bytes = pdf_asignacion_docente(seleccion_docente, info_doc, info_esc)
-            st.download_button("📥 Descargar Oficio de Asignación", data=pdf_bytes, file_name=f"Asignacion_{seleccion_docente.replace(' ', '_')}.pdf", mime="application/pdf", type="primary", use_container_width=True)
+            pdf_bytes = pdf_asignacion_docente(seleccion_docente, info_doc, info_esc, folio_asignado)
+            st.download_button(f"📥 Descargar Oficio (Folio {folio_asignado:03d})", data=pdf_bytes, file_name=f"Asignacion_{seleccion_docente.replace(' ', '_')}.pdf", mime="application/pdf", type="primary", use_container_width=True)
 
     with tab_directores:
-        st.info("Detalla a los directores de primaria la plantilla de la USAER 02-E asignada.")
+        st.info("Plantilla de la USAER 02-E asignada para informar a Directores de Primaria.")
         seleccion_escuela = st.selectbox("🔍 Selecciona la escuela primaria:", [""] + list(escuelas.keys()), key="sb_escuelas")
         if seleccion_escuela:
-            folio_escuela = obtener_folio(seleccion_escuela, "folios_directores.json")
+            # Solicita un folio global para este oficio
+            folio_escuela = obtener_folio(f"ASIGNACION_DIR_{seleccion_escuela}", f"Oficio Director - {seleccion_escuela}")
+            
             info_esc = escuelas[seleccion_escuela]
             st.success(f"A la atención de: **{info_esc['director']}**")
             pdf_bytes = pdf_asignacion_director(seleccion_escuela, info_esc, folio_escuela)
@@ -267,7 +289,9 @@ elif modulo == "Comisiones a Juntas":
         st.info(f"🔓 **Sistema Habilitado:** Junta académica del {fecha_format}.")
         docente_seleccionado = st.selectbox("🔍 Busca tu nombre:", [""] + list(personal.keys()), key="sb_comisiones")
         if docente_seleccionado:
-            folio_asignado = obtener_folio(docente_seleccionado, "folios_comisiones.json")
+            # Solicita un folio global para esta comisión
+            folio_asignado = obtener_folio(f"COMISION_{docente_seleccionado}", f"Comisión a Junta - {docente_seleccionado}")
+            
             datos = personal[docente_seleccionado]
             st.success(f"🏫 **Escuela:** {datos['escuela']} | 👤 **Atención a:** {datos['director']}")
             pdf_bytes = generar_pdf_comision(docente_seleccionado, datos, junta_activa, folio_asignado)
@@ -275,3 +299,35 @@ elif modulo == "Comisiones a Juntas":
     else:
         st.error("🔒 **Generador Bloqueado**")
         st.write("El sistema de comisiones actualmente se encuentra inactivo. Los oficios únicamente pueden generarse 48 horas antes de una junta académica oficial.")
+
+elif modulo == "🔒 Panel de Dirección":
+    st.subheader("Centro de Mando - Control de Folios")
+    passw = st.text_input("Ingresa la contraseña de Dirección para auditar los folios:", type="password")
+    
+    # Contraseña simple para acceder al registro
+    if passw == "USAER02":
+        st.success("Acceso autorizado.")
+        if os.path.exists(ARCHIVO_FOLIOS):
+            with open(ARCHIVO_FOLIOS, "r", encoding="utf-8") as f:
+                datos_folios = json.load(f)
+            
+            if datos_folios:
+                # Convertimos el JSON en una lista ordenada para visualizarla en una tabla bonita
+                lista_folios = [{"Folio": v["folio"], "Tipo de Documento": v["descripcion"], "Generado el": v["fecha"]} for k, v in datos_folios.items()]
+                lista_folios = sorted(lista_folios, key=lambda x: x["Folio"])
+                
+                st.dataframe(lista_folios, use_container_width=True)
+                
+                # Botón de descarga manual del respaldo
+                json_string = json.dumps(datos_folios, ensure_ascii=False, indent=4)
+                st.download_button(
+                    label="💾 Descargar Respaldo de Folios (JSON)",
+                    file_name="respaldo_folios_usaer.json",
+                    mime="application/json",
+                    data=json_string,
+                    type="secondary"
+                )
+            else:
+                st.info("Aún no se ha generado ningún documento oficial.")
+        else:
+            st.info("Aún no se ha generado ningún documento oficial.")
